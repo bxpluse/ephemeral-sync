@@ -1,6 +1,7 @@
 package main
 
 import (
+	"./color"
 	"crypto/md5"
 	"encoding/hex"
 	"fmt"
@@ -53,11 +54,11 @@ func sync(srcRoot string, destRoot string, syncPath string, level int) {
 			}
 
 			if !DirIdentical(newSrcAbsPath, newDestAbsPath) {
-				printAction(padding, fileName, newSyncPath, "Syncing dir")
+				printAction(padding, fileName, newSyncPath, color.Default, "Syncing dir")
 				sync(srcRoot, destRoot, newSyncPath, level+1)
 				cleanUp(srcRoot, destRoot, newSyncPath, newLevel)
 			} else {
-				printAction(padding, fileName, newSyncPath, "No diff found")
+				printAction(padding, fileName, newSyncPath, color.Default, "No diff found")
 			}
 
 		} else {
@@ -72,13 +73,13 @@ func sync(srcRoot string, destRoot string, syncPath string, level int) {
 			// If error in hashing file, then the dest file does not exist
 			if err != nil {
 				// Copy file to backup drive path
-				printAction(padding, fileName, newSyncPath, "Syncing file")
+				printAction(padding, fileName, newSyncPath, color.Green, "Syncing file")
 				copyFile(newSrcAbsPath, newDestAbsPath)
 			} else {
 				// Copy file if hash mismatches
 				hashSrc, _ := md5sum(newSrcAbsPath)
 				if hashDest != hashSrc {
-					printAction(padding, fileName, newSyncPath, "Syncing file")
+					printAction(padding, fileName, newSyncPath, color.Green, "Syncing file")
 					copyFile(newSrcAbsPath, newDestAbsPath)
 				}
 			}
@@ -102,12 +103,12 @@ func cleanUp(srcRoot string, destRoot string, syncPath string, level int) {
 		if !exists(newSrcAbsPath) {
 			if f.IsDir() {
 				// Delete all files in the directory, then the dir itself
-				printAction(padding, fileName, newSyncPath, "Deleting dir")
+				printAction(padding, fileName, newSyncPath, color.Red, "Deleting dir")
 				deleteDir(newDestAbsPath)
 				deleteFile(newDestAbsPath)
 			} else {
 				// Delete the file
-				printAction(padding, fileName, newSyncPath, "Deleting file")
+				printAction(padding, fileName, newSyncPath, color.Red, "Deleting file")
 				deleteFile(newDestAbsPath)
 			}
 		}
@@ -245,6 +246,6 @@ func hash(s string) uint32 {
 	return h.Sum32()
 }
 
-func printAction(padding, name, path, action string) {
-	fmt.Println(fmt.Sprintf("%s%s [%s]  <- %s", padding, name, path, action))
+func printAction(padding, name, path, color, action string) {
+	fmt.Println(color, fmt.Sprintf("%s%s [%s]  <- %s", padding, name, path, action))
 }
